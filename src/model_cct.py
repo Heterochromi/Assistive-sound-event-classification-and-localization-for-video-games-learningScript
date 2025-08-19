@@ -51,23 +51,3 @@ class MultiLabelCCT(nn.Module):
     def forward(self, x):
         return self.cct(x)
 
-    
-
-def get_model():
-    model = MultiLabelCCT(
-        img_size=(192, 668),
-        embedding_dim=384,
-        n_conv_layers=2,
-        kernel_size=7,
-        stride=2,
-        padding=3,
-        pooling_kernel_size=3,
-        pooling_stride=2,
-        pooling_padding=1,
-        num_layers=14,
-        num_heads=6,
-        mlp_ratio=3.0,
-        num_classes=80,
-        positional_embedding='learnable',
-    )
-    return model
