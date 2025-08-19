@@ -15,7 +15,7 @@ def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memo
     Returns:
         int: The optimal batch size.
     """
-    if device.type == 'cpu':
+    if device == 'cpu':
         print("Device is CPU, returning initial batch size.")
         return initial_batch_size
 
