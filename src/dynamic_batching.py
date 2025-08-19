@@ -1,7 +1,7 @@
 import torch
 import gc
 
-def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memory_usage_fraction=0.9):
+def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memory_usage_fraction=0.95):
     """
     Finds the optimal batch size that fits into a given fraction of the available GPU memory.
 
