@@ -41,6 +41,10 @@ def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memo
         if batch_size == 0:
             break
         
+        torch.cuda.empty_cache()
+        gc.collect()
+        torch.cuda.reset_peak_memory_stats(device)
+
         try:
             # Create a dummy input tensor
             dummy_input = torch.randn((batch_size, *input_shape), device=device)
@@ -50,15 +54,29 @@ def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memo
             loss = output.sum() # A dummy loss
             loss.backward()
             
+            # Measure memory usage
+            max_memory = torch.cuda.max_memory_allocated(device)
+            
             # Clean up
             del dummy_input, output, loss
             torch.cuda.empty_cache()
             gc.collect()
-            
-            # If successful, it means this batch size fits. Try a larger one.
-            optimal_batch_size = batch_size
-            low = batch_size + 1
-            print(f"Batch size {batch_size} fits. Trying larger.")
+
+            print(f"Batch size {batch_size}: Peak memory usage: {max_memory / 1024**3:.2f} GB")
+
+            # Check if memory usage is within the target range
+            if target_memory * 0.95 <= max_memory <= target_memory * 1.05:
+                print(f"Found optimal batch size {batch_size} within target memory range.")
+                return batch_size
+            elif max_memory < target_memory * 0.95:
+                # Memory usage is too low, try a larger batch size
+                optimal_batch_size = batch_size
+                low = batch_size + 1
+                print(f"Memory usage is low. Trying larger batch size.")
+            else:
+                # Memory usage is too high, try a smaller batch size
+                high = batch_size - 1
+                print(f"Memory usage is high. Trying smaller batch size.")
 
         except RuntimeError as e:
             if 'out of memory' in str(e):
@@ -71,5 +89,6 @@ def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memo
                 # Some other runtime error
                 raise e
     
-    print(f"Found optimal batch size: {optimal_batch_size}")
+    print(f"Could not find batch size within target range. Using best found: {optimal_batch_size}")
+    torch.cuda.empty_cache()
     return optimal_batch_size
