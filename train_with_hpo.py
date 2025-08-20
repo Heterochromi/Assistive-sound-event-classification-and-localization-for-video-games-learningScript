@@ -137,6 +137,7 @@ def get_pos_weights(train_loader):
     # Use a more conservative weighting scheme
     # pos_weights = torch.sqrt(neg_counts / (pos_counts + 1e-8))
     pos_weights = neg_counts / (pos_counts + 1e-8)
+    pos_weights = torch.clamp(pos_weights, min=1.0, max=15.0)
     return pos_weights
 
 # %%
@@ -155,6 +156,7 @@ history = {
 # %%
 for _ in range(20): # Run 25 rounds of 1 trial each
     trials = HPO_client.get_next_trials(max_trials=1)
+    torch.cuda.empty_cache()
     for trial_i , parameters in trials.items():
         # training set up
         model = load_model_with_hpo_parameters(parameters)
@@ -163,6 +165,7 @@ for _ in range(20): # Run 25 rounds of 1 trial each
         optimal_batch_size = find_optimal_batch_size(model, input_shape, initial_batch_size, device , memory_usage_fraction=0.9)
         train_loader, val_loader, mlb = create_dataloaders(CSV_PATH, IMG_DIR , batch_size=optimal_batch_size, val_split=0.20 , height=192 , width=668)
         pos_weights = get_pos_weights(train_loader)
+        pos_weights = pos_weights.to(device)
         criterion, optimizer, scheduler = setup_training(model, learning_rate=parameters['learning_rate'], pos_weights=pos_weights , total_steps_scheduler=len(train_loader) * epoch , use_focal_loss = True , T_max=60)
         # end of training set up
         for i in range(0,epoch):

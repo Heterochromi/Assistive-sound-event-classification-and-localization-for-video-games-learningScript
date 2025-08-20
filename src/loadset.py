@@ -67,35 +67,28 @@ class SpectrogramDataset(Dataset):
                 
         return image, label_tensor
 
-def create_dataloaders(csv_path, img_dir, batch_size=32, val_split=0.2 , height=192 , width=668):
-    """Creates training and validation DataLoaders."""
-    
-    # Define transformations
+def create_dataloaders(csv_path, img_dir, batch_size=32, val_split=0.2, height=192, width=668,
+                       num_workers=2, pin_memory=False, prefetch_factor=1, persistent_workers=False):
     transform = transforms.Compose([
         transforms.Resize((height, width)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
-    
-    # Create and fit the MultiLabelBinarizer
     df = pd.read_csv(csv_path)
-    # Prepare labels for the binarizer: a list of lists of strings
-    labels = [ [label.strip() for label in row.split(',')] for row in df['labels']]
-    mlb = MultiLabelBinarizer()
-    mlb.fit(labels)
-
-    # Create dataset
+    labels = [[label.strip() for label in row.split(',')] for row in df['labels']]
+    mlb = MultiLabelBinarizer().fit(labels)
     dataset = SpectrogramDataset(csv_path=csv_path, img_dir=img_dir, mlb=mlb, transform=transform)
-    
-    # Split dataset
+
     val_size = int(len(dataset) * val_split)
     train_size = len(dataset) - val_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size], generator=torch.Generator().manual_seed(42))
-    
-    # Create DataLoaders
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4, pin_memory=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
-    
+
+    dl_kwargs = dict(num_workers=num_workers, pin_memory=pin_memory)
+    if num_workers > 0:
+        dl_kwargs.update(dict(prefetch_factor=prefetch_factor, persistent_workers=persistent_workers))
+
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, **dl_kwargs)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, **dl_kwargs)
     return train_loader, val_loader, mlb
 
 if __name__ == '__main__':
