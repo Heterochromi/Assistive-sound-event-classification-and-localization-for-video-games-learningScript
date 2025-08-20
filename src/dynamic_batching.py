@@ -65,7 +65,7 @@ def find_optimal_batch_size(model, input_shape, initial_batch_size, device, memo
             print(f"Batch size {batch_size}: Peak memory usage: {max_memory / 1024**3:.2f} GB")
 
             # Check if memory usage is within the target range
-            if target_memory * 0.95 <= max_memory <= target_memory * 1.05:
+            if target_memory * 0.8 <= max_memory <= target_memory * 1.2:
                 print(f"Found optimal batch size {batch_size} within target memory range.")
                 return batch_size
             elif max_memory < target_memory * 0.95:
