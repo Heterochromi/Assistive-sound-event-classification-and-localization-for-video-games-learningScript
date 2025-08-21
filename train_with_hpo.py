@@ -141,20 +141,20 @@ def get_pos_weights(train_loader):
     return pos_weights
 
 # %%
-history = {
-    'train_loss': [],
-    'val_loss': [],
-    'exact_match_accuracy': [],
-    'hamming_loss': [],
-    'f1_macro': [],
-    'f1_micro': [],
-    'jaccard_index': [],
-    'element_wise_accuracy': [],
-    'positive_element_wise_accuracy': [],
-}
+# history = {
+#     'train_loss': [],
+#     'val_loss': [],
+#     'exact_match_accuracy': [],
+#     'hamming_loss': [],
+#     'f1_macro': [],
+#     'f1_micro': [],
+#     'jaccard_index': [],
+#     'element_wise_accuracy': [],
+#     'positive_element_wise_accuracy': [],
+# }
 
 # %%
-for _ in range(20): # Run 25 rounds of 1 trial each
+for _ in range(15): # Run 15 rounds of 1 trial each
     trials = HPO_client.get_next_trials(max_trials=1)
     torch.cuda.empty_cache()
     for trial_i , parameters in trials.items():
@@ -182,15 +182,15 @@ for _ in range(20): # Run 25 rounds of 1 trial each
                 "positive_element_wise_accuracy": metrics['positive_element_wise_accuracy'],
             }
             #--- Update history ---
-            history['train_loss'].append(train_loss)
-            history['val_loss'].append(metrics['loss'])
-            history['exact_match_accuracy'].append(metrics['exact_match_accuracy'])
-            history['hamming_loss'].append(metrics['hamming_loss'])
-            history['f1_macro'].append(metrics['f1_macro'])
-            history['f1_micro'].append(metrics['f1_micro'])
-            history['jaccard_index'].append(metrics['jaccard_index'])
-            history['element_wise_accuracy'].append(metrics['element_wise_accuracy'])
-            history['positive_element_wise_accuracy'].append(metrics['positive_element_wise_accuracy'])
+            # history['train_loss'].append(train_loss)
+            # history['val_loss'].append(metrics['loss'])
+            # history['exact_match_accuracy'].append(metrics['exact_match_accuracy'])
+            # history['hamming_loss'].append(metrics['hamming_loss'])
+            # history['f1_macro'].append(metrics['f1_macro'])
+            # history['f1_micro'].append(metrics['f1_micro'])
+            # history['jaccard_index'].append(metrics['jaccard_index'])
+            # history['element_wise_accuracy'].append(metrics['element_wise_accuracy'])
+            # history['positive_element_wise_accuracy'].append(metrics['positive_element_wise_accuracy'])
             clear_output(wait=True)
             print(f"Trial {trial_i} - Epoch {i + 1} - Train Loss: {train_loss:.4f} - Val Loss: {metrics['loss']:.4f} - Exact Match Accuracy: {metrics['exact_match_accuracy']:.4f} - Hamming Loss: {metrics['hamming_loss']:.4f} - F1 Macro: {metrics['f1_macro']:.4f} - F1 Micro: {metrics['f1_micro']:.4f} - Jaccard Index: {metrics['jaccard_index']:.4f} - Element-wise Accuracy: {metrics['element_wise_accuracy']:.4f} - Positive Element-wise Accuracy: {metrics['positive_element_wise_accuracy']:.4f}")
             if i == epoch - 1:
@@ -209,16 +209,16 @@ for _ in range(20): # Run 25 rounds of 1 trial each
                 HPO_client.mark_trial_early_stopped(trial_index=trial_i)
                 break
 
+#ONLY USE get_pareto_frontier if you are doing multiple objective trials , single objective trials can use get_best_parameterization
+# %%
+# frontier = HPO_client.get_pareto_frontier()
+
+# # Frontier is a list of tuples, where each tuple contains the parameters, the metric readings, the trial index, and the arm name for a point on the Pareto frontier
+# for parameters, metrics, trial_index, arm_name in frontier:
+#     print(f"Trial {trial_index} with {parameters=} and {metrics=}\n")
 
 # %%
-frontier = HPO_client.get_pareto_frontier()
-
-# Frontier is a list of tuples, where each tuple contains the parameters, the metric readings, the trial index, and the arm name for a point on the Pareto frontier
-for parameters, metrics, trial_index, arm_name in frontier:
-    print(f"Trial {trial_index} with {parameters=} and {metrics=}\n")
-
-# %%
-cards = HPO_client.compute_analyses(display=True)
+# cards = HPO_client.compute_analyses(display=True)
 
 
 
