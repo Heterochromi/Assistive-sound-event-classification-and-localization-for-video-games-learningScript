@@ -276,4 +276,5 @@ def trim_directory_inplace(
 
 
 if __name__ == "__main__":
-    trim_silence_file(input_path="C:/Users/samee/Desktop/Assistive-sound-event-classification-and-localization-for-video-games-learningScript/cs2 sounds/weapons/ak47/ak47_01.wav" , min_silence_len=1, trim_leading=False , trim_trailing=True , keep_silence=0 , silence_thresh=-25 , output_path="outputs")    
+    # trim_silence_file(input_path="cs2 sounds/grenade/flashbang/flashbang_explode1.wav" , min_silence_len=1, trim_leading=False , trim_trailing=True , keep_silence=0 , silence_thresh=-25 , output_path="outputs")    
+    trim_directory_inplace(root_dir="cs2 sounds" , extensions=(".wav", ".mp3", ".flac", ".ogg", ".m4a", ".aac") , min_silence_len=1 , silence_thresh=-25 , keep_silence=0 , remove_interior=False , trim_leading=False , trim_trailing=True , show_progress=True)
